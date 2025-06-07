@@ -1,3 +1,5 @@
+*Built with [ampcode.com](https://ampcode.com)*
+
 # Travla Dashboard 🏨
 
 A clean, minimal real-time dashboard for hotel group management that operates along Australia's eastern seaboard. Built with Next.js 14, TypeScript, and shadcn/ui.

@@ -98,6 +98,15 @@ NEXT_PUBLIC_PUSHER_CLUSTER=your-pusher-cluster
 - ESLint configured (temporarily disabled during builds)
 - Prettier formatting (recommended)
 
+### Vercel Deployment Fixes
+- Build command: `npm run build` (default Next.js build)
+- Node.js version: 18.x or 20.x recommended
+- Output directory: `.next` (automatic)
+- Install command: `npm ci` or `npm install`
+- Environment variables must be set in Vercel dashboard
+- ESLint errors will fail builds - temporarily disabled in vercel.json if needed
+- TypeScript errors will fail builds - run `npm run type-check` before deploy
+
 ### Known Issues & TODOs
 - Real-time Pusher integration pending
 - Authentication/RBAC not yet implemented

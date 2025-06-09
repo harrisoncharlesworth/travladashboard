@@ -5,8 +5,9 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Home, Building, TrendingUp, Settings, Sun, Moon } from "lucide-react"
+import { Home, Building, TrendingUp, Settings, Sun, Moon, Menu, X } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useState } from "react"
 
 const navigation = [
   { name: "Portfolio", href: "/", icon: Home },
@@ -18,6 +19,7 @@ const navigation = [
 export function Navigation() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -32,6 +34,7 @@ export function Navigation() {
               <Badge variant="secondary" className="text-xs">Dashboard</Badge>
             </div>
             
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
               {navigation.map((item) => {
                 const Icon = item.icon
@@ -56,6 +59,7 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Theme Toggle */}
             <Button
               variant="ghost"
               size="sm"
@@ -65,8 +69,54 @@ export function Navigation() {
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span className="sr-only">Toggle theme</span>
             </Button>
+
+            {/* Mobile Menu Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Menu className="h-4 w-4" />
+              )}
+              <span className="sr-only">Toggle menu</span>
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t bg-background/95 backdrop-blur">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navigation.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href
+                return (
+                  <Link 
+                    key={item.name} 
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      size="sm"
+                      className={cn(
+                        "w-full justify-start flex items-center space-x-2",
+                        isActive && "bg-primary text-primary-foreground"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.name}</span>
+                    </Button>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )

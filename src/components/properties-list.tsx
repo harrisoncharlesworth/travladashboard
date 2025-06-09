@@ -503,7 +503,7 @@ export function PropertiesList() {
   const states = useMemo(() => {
     if (!response?.data?.properties) return []
     const stateSet = new Set(response.data.properties.map((p: Property) => p.location.split(',')[1]?.trim()).filter(Boolean))
-    return Array.from(stateSet).sort()
+    return Array.from(stateSet).sort() as string[]
   }, [response])
 
   // Pagination logic
@@ -780,7 +780,7 @@ export function PropertiesList() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All States</SelectItem>
-                    {states.map((state) => (
+                    {states.map((state: string) => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
                   </SelectContent>

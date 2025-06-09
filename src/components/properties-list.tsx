@@ -64,6 +64,16 @@ interface Property {
   photo_url: string | null
 }
 
+interface PropertyWithMetrics extends Property {
+  latestMetrics: {
+    occupancy: number
+    revpar: number
+    adr: number
+    review_score: number
+    trend: 'up' | 'down' | 'stable'
+  } | null
+}
+
 interface PropertyMetrics {
   occupancy: number
   revpar: number
@@ -393,7 +403,7 @@ export function PropertiesList() {
     const metrics = response.data.metrics
     
     // Add latest metrics to each property for filtering/sorting
-    const propertiesWithMetrics = properties.map((property: Property) => {
+    const propertiesWithMetrics = properties.map((property: Property): PropertyWithMetrics => {
       const propertyMetrics = metrics.filter((m: ApiMetric) => m.property_id === property.id)
       const latestMetric = propertyMetrics[propertyMetrics.length - 1]
       
@@ -410,7 +420,7 @@ export function PropertiesList() {
     })
 
     // Filter properties
-    let filtered = propertiesWithMetrics.filter((property: any) => {
+    let filtered = propertiesWithMetrics.filter((property: PropertyWithMetrics) => {
       // Search query filter
       if (searchQuery && !property.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
           !property.location.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -453,7 +463,7 @@ export function PropertiesList() {
     })
 
     // Sort properties
-    filtered.sort((a: any, b: any) => {
+    filtered.sort((a: PropertyWithMetrics, b: PropertyWithMetrics) => {
       let aValue, bValue
       
       switch (sortBy) {
@@ -524,7 +534,7 @@ export function PropertiesList() {
 
   const getComparisonProperties = () => {
     return Array.from(selectedForComparison).map(id => 
-      filteredAndSortedProperties.find(p => p.id === id)
+      filteredAndSortedProperties.find((p: PropertyWithMetrics) => p.id === id)
     ).filter(Boolean)
   }
 
@@ -555,7 +565,7 @@ export function PropertiesList() {
   }
 
   // Market benchmarking helper
-  const calculateBenchmark = (property: any, metric: string, value: number) => {
+  const calculateBenchmark = (property: PropertyWithMetrics, metric: string, value: number) => {
     // Simplified benchmarking based on location and property type
     const location = property.location.split(',')[1]?.trim()
     let benchmark = 0
@@ -578,7 +588,7 @@ export function PropertiesList() {
 
   // Export functionality
   const exportComparison = () => {
-    const comparisonData = getComparisonProperties().map((property: any) => {
+    const comparisonData = getComparisonProperties().map((property: PropertyWithMetrics) => {
       const propertyMetrics = metrics.filter((m: any) => m.property_id === property.id)
       const latestMetric = propertyMetrics[propertyMetrics.length - 1]
       
@@ -1108,7 +1118,7 @@ export function PropertiesList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {getComparisonProperties().map((property: any) => {
+                {getComparisonProperties().map((property: PropertyWithMetrics) => {
                     const propertyMetrics = metrics.filter((m: ApiMetric) => m.property_id === property.id)
                     const latestMetric = propertyMetrics[propertyMetrics.length - 1]
                     const comparisonMetrics = latestMetric ? {

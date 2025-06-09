@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { LineChart, Line, AreaChart, Area, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
 import { 
@@ -34,15 +35,21 @@ interface PropertyDetailProps {
   propertyId: string
 }
 
-const mockChartData = [
-  { date: '06/01', bookings: 32, revenue: 4800, occupancy: 75 },
-  { date: '06/02', bookings: 28, revenue: 4200, occupancy: 72 },
-  { date: '06/03', bookings: 35, revenue: 5250, occupancy: 78 },
-  { date: '06/04', bookings: 42, revenue: 6300, occupancy: 85 },
-  { date: '06/05', bookings: 38, revenue: 5700, occupancy: 82 },
-  { date: '06/06', bookings: 45, revenue: 6750, occupancy: 89 },
-  { date: '06/07', bookings: 47, revenue: 7050, occupancy: 85 },
-]
+// Generate chart data from API metrics
+function generateChartData(metrics: any[], propertyId: string) {
+  const propertyMetrics = metrics.filter(m => m.property_id === propertyId)
+  const last7Days = propertyMetrics.slice(-7)
+  
+  return last7Days.map(metric => ({
+    date: new Date(metric.date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' }),
+    bookings: metric.bookings_today,
+    revenue: metric.revenue_today,
+    occupancy: metric.occupancy_rate,
+    revpar: metric.revpar,
+    walkins: metric.walk_ins,
+    staffHours: metric.staff_hours_worked
+  }))
+}
 
 const mockAlerts = [
   {
@@ -109,7 +116,15 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
   }
 
   const properties = response?.data?.properties || []
+  const metrics = response?.data?.metrics || []
   const property = properties.find((p: any) => p.id === propertyId)
+  
+  // Generate chart data from API
+  const chartData = generateChartData(metrics, propertyId)
+  
+  // Get latest metrics for current stats
+  const propertyMetrics = metrics.filter((m: any) => m.property_id === propertyId)
+  const latestMetric = propertyMetrics[propertyMetrics.length - 1]
 
   if (!property) {
     return (
@@ -125,14 +140,26 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb 
+        items={[
+          { label: "Properties", href: "/properties" },
+          { label: property.name, current: true }
+        ]}
+      />
+
       {/* Header */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/properties">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Properties
           </Link>
         </Button>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">{property.location.split(',')[1]?.trim()}</Badge>
+          <Badge variant="secondary">ID: {property.id}</Badge>
+        </div>
       </div>
 
       {/* Property Header */}
@@ -197,7 +224,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                   }}>
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={mockChartData}>
+                        <AreaChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="date" />
                           <YAxis yAxisId="left" />
@@ -243,8 +270,8 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                       color: "#dc2626",
                     },
                   }} className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={mockChartData}>
+                  <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" />
                         <YAxis />
@@ -325,29 +352,29 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Staff Utilization</div>
-                      <div className="text-2xl font-bold">72%</div>
-                      <div className="text-xs text-red-600">Below optimal</div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Maintenance Tasks</div>
-                      <div className="text-2xl font-bold">3</div>
-                      <div className="text-xs text-green-600">On schedule</div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Energy Usage</div>
-                      <div className="text-2xl font-bold">94%</div>
-                      <div className="text-xs text-gray-600">Of budget</div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Inventory Status</div>
-                      <div className="text-2xl font-bold">98%</div>
-                      <div className="text-xs text-green-600">Stocked</div>
-                    </div>
+                  <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Staff Hours Today</div>
+                  <div className="text-2xl font-bold">{latestMetric?.staff_hours_worked || 0}</div>
+                  <div className="text-xs text-muted-foreground">of {latestMetric?.staff_hours_scheduled || 0} scheduled</div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Walk-ins Today</div>
+                  <div className="text-2xl font-bold">{latestMetric?.walk_ins || 0}</div>
+                  <div className="text-xs text-green-600">Unexpected revenue</div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">ADR</div>
+                  <div className="text-2xl font-bold">${latestMetric?.adr || 0}</div>
+                  <div className="text-xs text-gray-600">Average daily rate</div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Revenue Today</div>
+                  <div className="text-2xl font-bold">${latestMetric?.revenue_today || 0}</div>
+                  <div className="text-xs text-green-600">Daily total</div>
+                  </div>
                   </div>
                 </CardContent>
               </Card>
@@ -368,31 +395,31 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Occupancy</span>
                 </div>
-                <span className="font-semibold">85%</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">RevPAR</span>
+                <span className="font-semibold">{latestMetric?.occupancy_rate || 0}%</span>
                 </div>
-                <span className="font-semibold">$142.50</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
+                
+                <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Check-ins</span>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">RevPAR</span>
                 </div>
-                <span className="font-semibold">23</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
+                <span className="font-semibold">${latestMetric?.revpar || 0}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Star className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Rating</span>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Bookings Today</span>
                 </div>
-                <span className="font-semibold">4.6/5</span>
+                <span className="font-semibold">{latestMetric?.bookings_today || 0}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                <Star className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Rating</span>
+                </div>
+                <span className="font-semibold">{latestMetric?.review_score || 0}/5</span>
               </div>
             </CardContent>
           </Card>

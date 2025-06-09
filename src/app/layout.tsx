@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navigation } from "@/components/navigation";
+import { NotificationSystem } from "@/components/notification-system";
+import { ToastContainer } from "@/components/ui/toast";
+import { OfflineIndicator } from "@/components/offline-indicator";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +33,9 @@ export default function RootLayout({
             <main className="max-w-screen-xl mx-auto px-4 md:px-6 py-6">
               {children}
             </main>
+            <NotificationSystem />
+            <ToastContainer />
+            <OfflineIndicator />
           </div>
         </ThemeProvider>
       </body>

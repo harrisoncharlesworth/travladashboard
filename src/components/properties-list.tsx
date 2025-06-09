@@ -119,7 +119,7 @@ function PropertyCard({
   selectedForBulkActions,
   onToggleBulkSelection
 }: { 
-  property: Property; 
+  property: Property | PropertyWithMetrics; 
   apiMetrics: ApiMetric[];
   selectedForComparison: Set<string>;
   onToggleComparison: (propertyId: string) => void;
@@ -550,7 +550,7 @@ export function PropertiesList() {
   }
 
   const selectAllProperties = () => {
-    setSelectedForBulkActions(new Set(paginatedProperties.map(p => p.id)))
+    setSelectedForBulkActions(new Set(paginatedProperties.map((p: PropertyWithMetrics) => p.id)))
   }
 
   const clearBulkSelection = () => {
@@ -995,7 +995,7 @@ export function PropertiesList() {
           ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6"
           : "space-y-4"
       )}>
-        {paginatedProperties.map((property: Property) => (
+        {paginatedProperties.map((property: PropertyWithMetrics) => (
           <PropertyCard 
             key={property.id} 
             property={property} 

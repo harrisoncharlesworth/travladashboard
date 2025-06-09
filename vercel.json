@@ -4,8 +4,6 @@
       "maxDuration": 30
     }
   },
-  "buildCommand": "npm run build",
-  "cacheDirectories": [".next/cache"],
   "headers": [
     {
       "source": "/_next/static/(.*)",

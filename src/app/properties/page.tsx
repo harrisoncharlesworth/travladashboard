@@ -1,5 +1,7 @@
 import { PropertiesList } from "@/components/properties-list"
 
+export const revalidate = 180 // Revalidate every 3 minutes
+
 export default function PropertiesPage() {
   return (
     <div className="space-y-6">
